@@ -69,7 +69,6 @@ DISTFILES += \
     qml/pages/Icons.qml \
     qml/pages/Image.qml \
     qml/pages/ConnectionPanel.qml \
-    qml/pages/Testing.qml \
     qml/pages/ChannelListView.qml \
     qml/pages/MessageListView.qml \
     qml/pages/About.qml
