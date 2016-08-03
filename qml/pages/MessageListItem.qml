@@ -11,9 +11,9 @@ ListItem {
 
     Column {
         id: column
-        width: parent.width - Theme.paddingLarge * 2
+        width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
         anchors.verticalCenter: parent.verticalCenter
-        x: Theme.paddingLarge
+        x: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
         spacing: Theme.paddingSmall
 
         Item {

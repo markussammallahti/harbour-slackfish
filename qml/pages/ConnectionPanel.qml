@@ -11,14 +11,14 @@ DockedPanel {
 
     Column {
         id: content
-        width: parent.width - Theme.paddingLarge * 2
+        width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
         anchors.centerIn: parent
         spacing: Theme.paddingMedium
 
         Row {
             id: reconnectingMessage
             anchors.horizontalCenter: parent.horizontalCenter
-            spacing: Theme.paddingSmall
+            spacing: Theme.paddingMedium
 
             BusyIndicator {
                 running: reconnectingMessage.visible

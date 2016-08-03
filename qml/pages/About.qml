@@ -21,22 +21,22 @@ Page {
             }
 
             Label {
-                x: Theme.paddingLarge
+                x: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
                 text: "Slackfish 1.0"
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeExtraLarge
             }
 
             Label {
-                x: Theme.paddingLarge
+                x: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
                 text: "Markus Sammallahti"
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeMedium
             }
 
             Label {
-                x: Theme.paddingLarge
-                width: parent.width - Theme.paddingLarge * 2
+                x: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
+                width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall
                 text: qsTr("Unoffical Slack client for Sailfish OS.
