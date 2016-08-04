@@ -1,7 +1,5 @@
 import QtQuick 2.1
-import QtQuick.Layouts 1.1
 import Sailfish.Silica 1.0
-import "Content.js" as Content
 
 ListItem {
     id: item
@@ -112,23 +110,8 @@ ListItem {
                             onLinkActivated: handleLink(link)
                         }
 
-                        GridLayout {
-                            id: grid
-                            columns: 2
-                            width: parent.width
-
-                            Repeater {
-                                model: fields
-
-                                RichTextLabel {
-                                    Layout.columnSpan: isShort ? 1 : 2
-                                    Layout.preferredWidth: isShort ? grid.width / 2 : grid.width
-                                    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-                                    font.pixelSize: Theme.fontSizeExtraSmall
-                                    font.weight: isTitle ? Font.Bold : Font.Normal
-                                    value: content
-                                }
-                            }
+                        AttachmentFieldGrid {
+                            fieldList: fields
                         }
                     }
                 }
