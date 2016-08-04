@@ -7,10 +7,9 @@ Page {
     id: page
 
     property bool firstView: true
+    property bool loading: true
     property string errorMessage: ""
     property string loadMessage: ""
-    property bool loading: true
-    property bool showError: errorMessage.length > 0
 
     SilicaFlickable {
         anchors.fill: parent
@@ -38,7 +37,7 @@ Page {
 
         BusyIndicator {
             id: loader
-            visible: loading && !showError
+            visible: loading && !errorMessageLabel.visible
             running: visible
             size: BusyIndicatorSize.Large
             anchors.centerIn: parent
@@ -46,10 +45,10 @@ Page {
 
         Label {
             id: errorMessageLabel
-            visible: showError
             anchors.centerIn: parent
             color: Theme.highlightColor
-            text: errorMessage
+            visible: text.length > 0
+            text: page.errorMessage
         }
 
         Button {
