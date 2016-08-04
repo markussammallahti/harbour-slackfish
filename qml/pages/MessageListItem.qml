@@ -113,18 +113,18 @@ ListItem {
                         AttachmentFieldGrid {
                             fieldList: fields
                         }
-                    }
-                }
 
-                Repeater {
-                    model: images
+                        Repeater {
+                            model: images
 
-                    Image {
-                        width: parent.width
-                        fillMode: Image.PreserveAspectFit
-                        source: url
-                        sourceSize.width: size.width
-                        sourceSize.height: size.height
+                            Image {
+                                width: parent.width
+                                fillMode: Image.PreserveAspectFit
+                                source: url
+                                sourceSize.width: size.width
+                                sourceSize.height: size.height
+                            }
+                        }
                     }
                 }
             }
