@@ -73,4 +73,5 @@ DISTFILES += \
     qml/pages/MessageListView.qml \
     qml/pages/About.qml \
     qml/pages/RichTextLabel.qml \
-    qml/pages/AttachmentFieldGrid.qml
+    qml/pages/AttachmentFieldGrid.qml \
+    qml/pages/Attachment.qml

@@ -5,6 +5,7 @@ ListItem {
     id: item
     enabled: false
     contentHeight: column.height + Theme.paddingMedium
+
     property color infoColor: item.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
     property color textColor: item.highlighted ? Theme.highlightColor : Theme.primaryColor
 
@@ -48,11 +49,11 @@ ListItem {
 
             Image {
                 width: parent.width
-                height: thumbSize.height
+                height: model.thumbSize.height
                 fillMode: Image.PreserveAspectFit
-                source: thumbUrl
-                sourceSize.width: thumbSize.width
-                sourceSize.height: thumbSize.height
+                source: model.thumbUrl
+                sourceSize.width: model.thumbSize.width
+                sourceSize.height: model.thumbSize.height
 
                 MouseArea {
                     anchors.fill: parent
@@ -66,67 +67,10 @@ ListItem {
         Repeater {
             model: attachments
 
-            Column {
+            Attachment {
                 width: column.width
-                spacing: Theme.paddingMedium
-
-                RichTextLabel {
-                    width: parent.width
-                    font.pixelSize: Theme.fontSizeSmall
-                    visible: text.length > 0
-                    value: pretext
-                    onLinkActivated: handleLink(link)
-                }
-
-                Row {
-                    width: parent.width
-                    spacing: Theme.paddingMedium
-
-                    Rectangle {
-                        id: color
-                        width: Theme.paddingSmall
-                        height: parent.height
-                        color: indicatorColor == "theme" ? Theme.highlightColor : indicatorColor
-                    }
-
-                    Column {
-                        width: parent.width - color.width - Theme.paddingMedium
-                        spacing: Theme.paddingMedium
-
-                        RichTextLabel {
-                            width: parent.width
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.weight: Font.Bold
-                            value: title
-                            visible: text.length > 0
-                            onLinkActivated: handleLink(link)
-                        }
-
-                        RichTextLabel {
-                            width: parent.width
-                            font.pixelSize: Theme.fontSizeSmall
-                            value: content
-                            visible: text.length > 0
-                            onLinkActivated: handleLink(link)
-                        }
-
-                        AttachmentFieldGrid {
-                            fieldList: fields
-                        }
-
-                        Repeater {
-                            model: images
-
-                            Image {
-                                width: parent.width
-                                fillMode: Image.PreserveAspectFit
-                                source: url
-                                sourceSize.width: size.width
-                                sourceSize.height: size.height
-                            }
-                        }
-                    }
-                }
+                attachment: model
+                onLinkClicked: handleLink(link)
             }
         }
     }
