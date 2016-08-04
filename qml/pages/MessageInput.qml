@@ -2,16 +2,11 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 Column {
-    id: wrapper
-
-    width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 1 : 0)
-
-    property bool enabled: false
-    property bool sendEnabled: messageInput.text.length > 0 && enabled
-
-    property alias inputPlaceholder: messageInput.placeholderText
+    property alias placeholder: messageInput.placeholderText
 
     signal sendMessage(string content)
+
+    width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 1 : 0)
 
     Rectangle {
         color: "transparent"
@@ -36,7 +31,7 @@ Column {
                 bottomMargin: 40
             }
             icon.source: "image://theme/icon-m-enter-accept"
-            enabled: wrapper.sendEnabled
+            enabled: messageInput.text.length > 0
             onClicked: handleSendMessage()
         }
     }

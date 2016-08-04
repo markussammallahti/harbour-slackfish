@@ -4,6 +4,8 @@ import Sailfish.Silica 1.0
 Page {
     id: page
 
+    property double padding: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
+
     SilicaFlickable {
         anchors.fill: parent
 
@@ -21,21 +23,21 @@ Page {
             }
 
             Label {
-                x: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
+                x: page.padding
                 text: "Slackfish 1.0"
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeExtraLarge
             }
 
             Label {
-                x: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
+                x: page.padding
                 text: "Markus Sammallahti"
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeMedium
             }
 
             Label {
-                x: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
+                x: page.padding
                 width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
                 wrapMode: Text.Wrap
                 font.pixelSize: Theme.fontSizeSmall

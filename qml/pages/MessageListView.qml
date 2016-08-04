@@ -49,9 +49,8 @@ SilicaListView {
     }
 
     footer: MessageInput {
-        enabled: true
         visible: inputEnabled
-        inputPlaceholder: qsTr("Message %1%2").arg("#").arg(channel.name)
+        placeholder: qsTr("Message %1%2").arg("#").arg(channel.name)
         onSendMessage: {
             Slack.Client.postMessage(channel.id, content)
         }

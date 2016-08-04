@@ -1,6 +1,7 @@
 import QtQuick 2.1
 import QtQuick.Layouts 1.1
 import Sailfish.Silica 1.0
+import "Content.js" as Content
 
 ListItem {
     id: item
@@ -35,14 +36,12 @@ ListItem {
             }
         }
 
-        Label {
+        RichTextLabel {
             width: parent.width
-            wrapMode: Text.Wrap
-            textFormat: Text.RichText
             font.pixelSize: Theme.fontSizeSmall
-            text: richText(content)
             color: textColor
             visible: text.length > 0
+            value: content
             onLinkActivated: handleLink(link)
         }
 
@@ -73,14 +72,11 @@ ListItem {
                 width: column.width
                 spacing: Theme.paddingMedium
 
-                Label {
-                    id: pretextField
+                RichTextLabel {
                     width: parent.width
-                    wrapMode: Text.Wrap
                     font.pixelSize: Theme.fontSizeSmall
-                    textFormat: Text.RichText
-                    text: richText(pretext)
                     visible: text.length > 0
+                    value: pretext
                     onLinkActivated: handleLink(link)
                 }
 
@@ -99,37 +95,19 @@ ListItem {
                         width: parent.width - color.width - Theme.paddingMedium
                         spacing: Theme.paddingMedium
 
-                        /*
-                        Label {
+                        RichTextLabel {
                             width: parent.width
-                            wrapMode: Text.Wrap
-                            font.pixelSize: Theme.fontSizeSmall
-                            textFormat: Text.RichText
-                            text: richText(fallback)
-                            visible: !(pretextField.visible || titleField.visible || contentField.visible)
-                            onLinkActivated: handleLink(link)
-                        }
-                        */
-
-                        Label {
-                            id: titleField
-                            width: parent.width
-                            wrapMode: Text.Wrap
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold
-                            textFormat: Text.RichText
-                            text: richText(title)
+                            value: title
                             visible: text.length > 0
                             onLinkActivated: handleLink(link)
                         }
 
-                        Label {
-                            id: contentField
+                        RichTextLabel {
                             width: parent.width
-                            wrapMode: Text.Wrap
                             font.pixelSize: Theme.fontSizeSmall
-                            textFormat: Text.RichText
-                            text: richText(content)
+                            value: content
                             visible: text.length > 0
                             onLinkActivated: handleLink(link)
                         }
@@ -142,15 +120,13 @@ ListItem {
                             Repeater {
                                 model: fields
 
-                                Label {
+                                RichTextLabel {
                                     Layout.columnSpan: isShort ? 1 : 2
                                     Layout.preferredWidth: isShort ? grid.width / 2 : grid.width
                                     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                                     font.pixelSize: Theme.fontSizeExtraSmall
                                     font.weight: isTitle ? Font.Bold : Font.Normal
-                                    wrapMode: Text.Wrap
-                                    textFormat: Text.RichText
-                                    text: richText(content)
+                                    value: content
                                 }
                             }
                         }
@@ -162,7 +138,6 @@ ListItem {
 
                     Image {
                         width: parent.width
-                        //height: size.height
                         fillMode: Image.PreserveAspectFit
                         source: url
                         sourceSize.width: size.width
@@ -171,10 +146,6 @@ ListItem {
                 }
             }
         }
-    }
-
-    function richText(content) {
-        return content.length > 0 ? "<style>a:link { color: " + Theme.highlightColor + "; }</style>" + content : ""
     }
 
     function handleLink(link) {
