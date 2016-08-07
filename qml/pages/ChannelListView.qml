@@ -45,7 +45,7 @@ SilicaListView {
 
             Image {
                 id: icon
-                source: "image://theme/" + getChannelIcon(model) + "?" + currentColor
+                source: "image://theme/" + getChannelIcon(model) + "?" + (delegate.highlighted ? currentColor : getChannelIconColor(model, currentColor))
                 anchors.verticalCenter: parent.verticalCenter
             }
 
@@ -78,6 +78,19 @@ SilicaListView {
                 return "icon-s-secure"
             case "im":
                 return "icon-s-chat"
+        }
+    }
+
+    function getChannelIconColor(model, color) {
+        switch (model.presence) {
+            case "active":
+                return "lawngreen"
+
+            case "away":
+                return "lightgrey"
+
+            default:
+                return color
         }
     }
 

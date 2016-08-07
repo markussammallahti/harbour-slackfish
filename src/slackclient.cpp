@@ -100,6 +100,9 @@ void SlackClient::handleMessage(QString message) {
     else if (type == "group_marked" || type == "channel_marked" || type == "im_marked" || type == "mpim_marked") {
         parseChannelUpdate(messageObject);
     }
+    else if (type == "presence_change" || type == "manual_presence_change") {
+        parsePresenceChange(messageObject);
+    }
 }
 
 void SlackClient::parseChannelUpdate(QJsonObject message) {
@@ -135,6 +138,28 @@ void SlackClient::parseMessageUpdate(QJsonObject message) {
     }
 
     emit messageReceived(data);
+}
+
+void SlackClient::parsePresenceChange(QJsonObject message) {
+    QString userId = message.value("user").toString();
+    QString presence = message.value("presence").toString();
+
+    if (users.contains(userId)) {
+        QVariantMap user = users.value(userId).toMap();
+        user.insert("presence", presence);
+        users.insert(userId, user);
+        emit userUpdated(user);
+    }
+
+    foreach (QString channelId, channels.keys()) {
+        QVariantMap channel = channels.value(channelId).toMap();
+
+        if (channel.value("type") == QVariant("im") && channel.value("userId") == QVariant(userId)) {
+            channel.insert("presence", presence);
+            channels.insert(channelId, channel);
+            emit channelUpdated(channel);
+        }
+    }
 }
 
 bool SlackClient::isOk(const QNetworkReply *reply) {
@@ -330,6 +355,7 @@ void SlackClient::handleStartReply() {
         QVariantMap data;
         data.insert("id", user.value("id").toVariant());
         data.insert("name", user.value("name").toVariant());
+        data.insert("presence", user.value("presence").toVariant());
 
         users.insert(data.value("id").toString(), data);
     }
@@ -353,6 +379,7 @@ void SlackClient::handleStartReply() {
         data.insert("id", channel.value("id").toVariant());
         data.insert("name", channel.value("name").toVariant());
         data.insert("isMember", channel.value("is_member").toVariant());
+        data.insert("presence", QVariant("none"));
         data.insert("isOpen", channel.value("is_member").toVariant());
         data.insert("lastRead", channel.value("last_read").toVariant());
         data.insert("unreadCount", channel.value("unread_count_display").toVariant());
@@ -388,6 +415,7 @@ void SlackClient::handleStartReply() {
         }
 
         data.insert("id", group.value("id").toVariant());
+        data.insert("presence", QVariant("none"));
         data.insert("isOpen", group.value("is_open").toVariant());
         data.insert("lastRead", group.value("last_read").toVariant());
         data.insert("unreadCount", group.value("unread_count_display").toVariant());
@@ -405,7 +433,9 @@ void SlackClient::handleStartReply() {
         data.insert("type", QVariant("im"));
         data.insert("category", QVariant("chat"));
         data.insert("id", chat.value("id").toVariant());
+        data.insert("userId", QVariant(userId));
         data.insert("name", user.value("name"));
+        data.insert("presence", user.value("presence"));
         data.insert("isOpen", chat.value("is_open").toVariant());
         data.insert("lastRead", chat.value("last_read").toVariant());
         data.insert("unreadCount", chat.value("unread_count_display").toVariant());

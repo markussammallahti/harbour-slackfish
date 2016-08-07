@@ -34,6 +34,7 @@ signals:
     void reconnectAccessTokenFail();
     void messageReceived(QVariantMap message);
     void channelUpdated(QVariantMap channel);
+    void userUpdated(QVariantMap user);
     void reconnecting();
     void disconnected();
     void connected();
@@ -66,6 +67,7 @@ private:
 
     void parseMessageUpdate(QJsonObject message);
     void parseChannelUpdate(QJsonObject message);
+    void parsePresenceChange(QJsonObject message);
 
     QVariantMap getMessageData(const QJsonObject message);
 
