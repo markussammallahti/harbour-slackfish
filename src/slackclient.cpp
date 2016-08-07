@@ -103,10 +103,9 @@ void SlackClient::handleMessage(QString message) {
 }
 
 void SlackClient::parseChannelUpdate(QJsonObject message) {
-    qDebug() << "Channel unread counts" << message.value("unread_count").toInt() << message.value("unread_count_display").toInt();
-
     QString id = message.value("channel").toString();
     QVariantMap channel = channels.value(id).toMap();
+    channel.insert("lastRead", message.value("ts").toVariant());
     channel.insert("unreadCount", message.value("unread_count_display").toVariant());
     channels.insert(id, channel);
 
@@ -124,11 +123,17 @@ void SlackClient::parseMessageUpdate(QJsonObject message) {
     }
 
     QVariantMap channel = channels.value(channelId).toMap();
-    int unreadCount = channel.value("unreadCount").toInt() + 1;
-    channel.insert("unreadCount", unreadCount);
-    channels.insert(channelId, channel);
 
-    emit channelUpdated(channel);
+    QString messageTime = data.value("time").toString();
+    QString latestRead = channel.value("lastRead").toString();
+
+    if (messageTime > latestRead) {
+        int unreadCount = channel.value("unreadCount").toInt() + 1;
+        channel.insert("unreadCount", unreadCount);
+        channels.insert(channelId, channel);
+        emit channelUpdated(channel);
+    }
+
     emit messageReceived(data);
 }
 
@@ -349,6 +354,7 @@ void SlackClient::handleStartReply() {
         data.insert("name", channel.value("name").toVariant());
         data.insert("isMember", channel.value("is_member").toVariant());
         data.insert("isOpen", channel.value("is_member").toVariant());
+        data.insert("lastRead", channel.value("last_read").toVariant());
         data.insert("unreadCount", channel.value("unread_count_display").toVariant());
 
         channels.insert(data.value("id").toString(), data);
@@ -383,6 +389,7 @@ void SlackClient::handleStartReply() {
 
         data.insert("id", group.value("id").toVariant());
         data.insert("isOpen", group.value("is_open").toVariant());
+        data.insert("lastRead", group.value("last_read").toVariant());
         data.insert("unreadCount", group.value("unread_count_display").toVariant());
         channels.insert(data.value("id").toString(), data);
     }
@@ -400,6 +407,7 @@ void SlackClient::handleStartReply() {
         data.insert("id", chat.value("id").toVariant());
         data.insert("name", user.value("name"));
         data.insert("isOpen", chat.value("is_open").toVariant());
+        data.insert("lastRead", chat.value("last_read").toVariant());
         data.insert("unreadCount", chat.value("unread_count_display").toVariant());
         channels.insert(data.value("id").toString(), data);
     }
