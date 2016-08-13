@@ -6,14 +6,20 @@ Column {
 
     signal linkClicked(string link)
 
-    spacing: Theme.paddingMedium
+    spacing: Theme.paddingSmall
 
     RichTextLabel {
+        id: pretextLabel
         width: parent.width
         font.pixelSize: Theme.fontSizeSmall
         visible: text.length > 0
         value: attachment.pretext
         onLinkActivated: linkClicked(link)
+    }
+
+    Spacer {
+        height: Theme.paddingSmall
+        visible: !pretextLabel.visible
     }
 
     Row {
@@ -29,7 +35,7 @@ Column {
 
         Column {
             width: parent.width - color.width - Theme.paddingMedium
-            spacing: Theme.paddingMedium
+            spacing: Theme.paddingSmall
 
             RichTextLabel {
                 width: parent.width

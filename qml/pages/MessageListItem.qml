@@ -14,7 +14,6 @@ ListItem {
         width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 4 : 2)
         anchors.verticalCenter: parent.verticalCenter
         x: Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 2 : 1)
-        spacing: Theme.paddingSmall
 
         Item {
             width: parent.width
@@ -36,6 +35,7 @@ ListItem {
         }
 
         RichTextLabel {
+            id: contentLabel
             width: parent.width
             font.pixelSize: Theme.fontSizeSmall
             color: textColor
@@ -44,7 +44,13 @@ ListItem {
             onLinkActivated: handleLink(link)
         }
 
+        Spacer {
+            height: Theme.paddingMedium
+            visible: contentLabel.visible && (imageRepeater.count > 0 || attachmentRepeater.count > 0)
+        }
+
         Repeater {
+            id: imageRepeater
             model: images
 
             Image {
@@ -65,6 +71,7 @@ ListItem {
         }
 
         Repeater {
+            id: attachmentRepeater
             model: attachments
 
             Attachment {

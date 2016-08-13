@@ -74,4 +74,5 @@ DISTFILES += \
     qml/pages/About.qml \
     qml/pages/RichTextLabel.qml \
     qml/pages/AttachmentFieldGrid.qml \
-    qml/pages/Attachment.qml
+    qml/pages/Attachment.qml \
+    qml/pages/Spacer.qml

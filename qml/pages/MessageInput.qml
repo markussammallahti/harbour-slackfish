@@ -8,9 +8,7 @@ Column {
 
     width: parent.width - Theme.paddingLarge * (Screen.sizeCategory >= Screen.Large ? 1 : 0)
 
-    Rectangle {
-        color: "transparent"
-        width: parent.width
+    Spacer {
         height: Theme.paddingMedium
     }
 
