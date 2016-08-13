@@ -5,7 +5,6 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonValue>
-#include <QThread>
 #include <QSize>
 #include <QStringList>
 #include <QRegularExpression>
@@ -275,7 +274,6 @@ void SlackClient::testLogin() {
     url.setQuery(query);
     QNetworkRequest request(url);
 
-    QThread::msleep(200);
     testLoginReply = networkAccessManager->get(request);
     connect(testLoginReply, SIGNAL(finished()), this, SLOT(handleTestLoginReply()));
 }
@@ -325,7 +323,6 @@ void SlackClient::start() {
     QNetworkRequest request(url);
     qDebug() << "Start" << url;
 
-    QThread::msleep(200);
     startReply = networkAccessManager->get(request);
     connect(startReply, SIGNAL(finished()), this, SLOT(handleStartReply()));
 }
@@ -442,7 +439,6 @@ void SlackClient::handleStartReply() {
         channels.insert(data.value("id").toString(), data);
     }
 
-    QThread::msleep(200);
     QUrl url(data.value("url").toString());
 
     QString socketUrl = url.scheme() + "://" + url.host();
@@ -504,7 +500,6 @@ void SlackClient::loadMessages(QString type, QString channelId) {
     QNetworkRequest request(url);
     qDebug() << "Load messages" << url;
 
-    QThread::msleep(200);
     loadMessagesReply = networkAccessManager->get(request);
     loadMessagesReply->setProperty("channelId", channelId);
     connect(loadMessagesReply, SIGNAL(finished()), this, SLOT(handleLoadMessagesReply()));
