@@ -50,6 +50,17 @@ Browse channel and post new messages. Channels are updated real-time when new me
     </message>
 </context>
 <context>
+    <name>CoverPage</name>
+    <message>
+        <source>Reconnecting</source>
+        <translation>Reconnecting</translation>
+    </message>
+    <message>
+        <source>Disconnected</source>
+        <translation>Disconnected</translation>
+    </message>
+</context>
+<context>
     <name>Loader</name>
     <message>
         <source>Login</source>

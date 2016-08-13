@@ -46,9 +46,53 @@ CoverBackground {
         }
     }
 
+    Label {
+        id: connectionMessage
+        color: Theme.highlightColor
+        text: ""
+        visible: text.length > 0
+        width: parent.width - Theme.paddingLarge * 2
+        truncationMode: TruncationMode.Fade
+        anchors {
+            top: messageCount.bottom
+            left: parent.left
+            topMargin: Theme.paddingLarge
+            leftMargin: Theme.paddingLarge
+            rightMargin: Theme.paddingLarge
+        }
+    }
+
+    CoverActionList {
+        id: disconnectedActions
+        enabled: false
+
+        CoverAction {
+            iconSource: "image://theme/icon-cover-refresh"
+            onTriggered: Slack.Client.reconnect()
+        }
+    }
+
     Component.onCompleted: {
         Slack.Client.onInitSuccess.connect(reloadChannelList)
         Slack.Client.onChannelUpdated.connect(reloadChannelList)
+        Slack.Client.onConnected.connect(hideConnectionMessage)
+        Slack.Client.onReconnecting.connect(showReconnectingMessage)
+        Slack.Client.onDisconnected.connect(showDisconnectedMessage)
+    }
+
+    function hideConnectionMessage() {
+        connectionMessage.text = ""
+        disconnectedActions.enabled = false
+    }
+
+    function showReconnectingMessage() {
+        connectionMessage.text = qsTr("Reconnecting")
+        disconnectedActions.enabled = false
+    }
+
+    function showDisconnectedMessage() {
+        connectionMessage.text = qsTr("Disconnected")
+        disconnectedActions.enabled = true
     }
 
     function reloadChannelList() {

@@ -50,6 +50,17 @@ Selaa kanavia ja kirjoita viestejä. Kanavat päivittyvät automaattisesti kun u
     </message>
 </context>
 <context>
+    <name>CoverPage</name>
+    <message>
+        <source>Reconnecting</source>
+        <translation>Yhdistetään</translation>
+    </message>
+    <message>
+        <source>Disconnected</source>
+        <translation>Yheys katkennut</translation>
+    </message>
+</context>
+<context>
     <name>Loader</name>
     <message>
         <source>Login</source>
