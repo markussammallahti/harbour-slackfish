@@ -48,6 +48,7 @@ CoverBackground {
 
     Label {
         id: connectionMessage
+        font.pixelSize: Theme.fontSizeSmall
         color: Theme.highlightColor
         text: ""
         visible: text.length > 0
@@ -78,6 +79,8 @@ CoverBackground {
         Slack.Client.onConnected.connect(hideConnectionMessage)
         Slack.Client.onReconnecting.connect(showReconnectingMessage)
         Slack.Client.onDisconnected.connect(showDisconnectedMessage)
+        Slack.Client.onNetworkOff.connect(showNoNetworkMessage)
+        Slack.Client.onNetworkOn.connect(hideNetworkMessage)
     }
 
     function hideConnectionMessage() {
@@ -93,6 +96,16 @@ CoverBackground {
     function showDisconnectedMessage() {
         connectionMessage.text = qsTr("Disconnected")
         disconnectedActions.enabled = true
+    }
+
+    function showNoNetworkMessage() {
+        connectionMessage.text = qsTr("No network connection")
+        disconnectedActions.enabled = false
+    }
+
+    function hideNetworkMessage() {
+        connectionMessage.text = ""
+        disconnectedActions.enabled = false
     }
 
     function reloadChannelList() {

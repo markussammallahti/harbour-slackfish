@@ -51,12 +51,16 @@ DockedPanel {
         Slack.Client.onConnected.connect(hideConnectionPanel)
         Slack.Client.onReconnecting.connect(showReconnectingMessage)
         Slack.Client.onDisconnected.connect(showDisconnectedMessage)
+        Slack.Client.onNetworkOff.connect(showNoNetworkMessage)
+        Slack.Client.onNetworkOn.connect(hideConnectionPanel)
     }
 
     Component.onDestruction: {
         Slack.Client.onConnected.disconnect(hideConnectionPanel)
         Slack.Client.onReconnecting.disconnect(showReconnectingMessage)
         Slack.Client.onDisconnected.disconnect(showDisconnectedMessage)
+        Slack.Client.onNetworkOff.disconnect(showNoNetworkMessage)
+        Slack.Client.onNetworkOn.disconnect(hideConnectionPanel)
     }
 
     function hideConnectionPanel() {
@@ -71,8 +75,17 @@ DockedPanel {
     }
 
     function showDisconnectedMessage() {
+        disconnectedMessage.text = qsTr("Disconnected")
         disconnectedMessage.visible = true
         reconnectButton.visible = true
+        reconnectingMessage.visible = false
+        connectionPanel.show()
+    }
+
+    function showNoNetworkMessage() {
+        disconnectedMessage.text = qsTr("No network connection")
+        disconnectedMessage.visible = true
+        reconnectButton.visible = false
         reconnectingMessage.visible = false
         connectionPanel.show()
     }

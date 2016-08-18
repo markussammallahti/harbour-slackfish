@@ -48,6 +48,10 @@ Browse channel and post new messages. Channels are updated real-time when new me
         <source>Reconnect</source>
         <translation>Reconnect</translation>
     </message>
+    <message>
+        <source>No network connection</source>
+        <translation>No network connection</translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>
@@ -58,6 +62,10 @@ Browse channel and post new messages. Channels are updated real-time when new me
     <message>
         <source>Disconnected</source>
         <translation>Disconnected</translation>
+    </message>
+    <message>
+        <source>No network connection</source>
+        <translation>No network connection</translation>
     </message>
 </context>
 <context>

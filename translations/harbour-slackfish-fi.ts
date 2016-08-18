@@ -48,6 +48,10 @@ Selaa kanavia ja kirjoita viestejä. Kanavat päivittyvät automaattisesti kun u
         <source>Reconnect</source>
         <translation>Yhdistä</translation>
     </message>
+    <message>
+        <source>No network connection</source>
+        <translation>Ei verkkoyhteyttä</translation>
+    </message>
 </context>
 <context>
     <name>CoverPage</name>
@@ -58,6 +62,10 @@ Selaa kanavia ja kirjoita viestejä. Kanavat päivittyvät automaattisesti kun u
     <message>
         <source>Disconnected</source>
         <translation>Yheys katkennut</translation>
+    </message>
+    <message>
+        <source>No network connection</source>
+        <translation>Ei verkkoyhteyttä</translation>
     </message>
 </context>
 <context>

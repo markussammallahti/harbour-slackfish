@@ -39,6 +39,13 @@ SlackClient::~SlackClient() {
 void SlackClient::handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible) {
     qDebug() << "Network accessible changed" << accessible;
     networkAccessible = accessible;
+
+    if (networkAccessible == QNetworkAccessManager::Accessible) {
+        emit networkOn();
+    }
+    else {
+        emit networkOff();
+    }
 }
 
 void SlackClient::checkConnection() {

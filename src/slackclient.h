@@ -35,6 +35,8 @@ signals:
     void messageReceived(QVariantMap message);
     void channelUpdated(QVariantMap channel);
     void userUpdated(QVariantMap user);
+    void networkOff();
+    void networkOn();
     void reconnecting();
     void disconnected();
     void connected();
