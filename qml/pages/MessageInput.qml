@@ -43,6 +43,7 @@ Column {
 
     function handleSendMessage() {
         var input = messageInput.text
+        messageInput.text = messageInput.text + " " // Silica bug
         messageInput.text = ""
 
         if (input.length < 1) {
