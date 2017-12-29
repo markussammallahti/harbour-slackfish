@@ -22,8 +22,15 @@ Page {
             if (request.url.toString().indexOf('http://localhost:3000/oauth/callback') !== -1) {
                 visible = false
                 request.action = WebView.IgnoreRequest
-                Slack.Client.fetchAccessToken(request.url)
-            } else {
+
+                if (request.url.toString().indexOf('error=') !== -1) {
+                    pageStack.pop(undefined, PageStackAction.Animated)
+                }
+                else {
+                    Slack.Client.fetchAccessToken(request.url)
+                }
+            }
+            else {
                 request.action = WebView.AcceptRequest
             }
         }
