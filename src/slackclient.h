@@ -31,6 +31,8 @@ signals:
     void testLoginSuccess(QString userId, QString teamId, QString team);
     void testLoginFail();
 
+    void loadUsersSuccess();
+
     void accessTokenSuccess(QString userId, QString teamId, QString team);
     void accessTokenFail();
 
@@ -60,6 +62,8 @@ signals:
     void connected();
 
 public slots:
+    void init();
+
     void start();
     void handleStartReply();
 
@@ -68,6 +72,9 @@ public slots:
 
     void testLogin();
     void handleTestLoginReply();
+
+    void loadUsers();
+    void handleLoadUsersReply();
 
     void loadMessages(QString type, QString channelId);
     void handleLoadMessagesReply();
@@ -81,14 +88,26 @@ public slots:
     void markChannel(QString type, QString channelId, QString time);
     void handleMarkChannelReply();
 
+    void loadChannels();
+    void handleLoadChannelsReply();
+
     void joinChannel(QString channelId);
     void handleJoinChannelReply();
 
     void leaveChannel(QString channelId);
     void handleLeaveChannelReply();
 
+    void loadGroups();
+    void handleLoadGroupsReply();
+
     void leaveGroup(QString groupId);
     void handleLeaveGroupReply();
+
+    void loadIms();
+    void handleLoadImsReply();
+
+    void loadMpims();
+    void handleLoadMpimsReply();
 
     void openChat(QString chatId);
     void handleOpenChatReply();

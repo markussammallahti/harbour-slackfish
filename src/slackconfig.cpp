@@ -15,6 +15,10 @@ void SlackConfig::setAccessToken(QString accessToken) {
     settings.setValue("user/accessToken", QVariant(accessToken));
 }
 
+void SlackConfig::clearAccessToken() {
+    settings.remove("user/accessToken");
+}
+
 QString SlackConfig::userId() {
     return currentUserId;
 }

@@ -274,7 +274,11 @@ QJsonObject SlackClient::getResult(QNetworkReply *reply) {
 
 QNetworkReply* SlackClient::executeGet(QString method, QMap<QString, QString> params) {
     QUrlQuery query;
-    query.addQueryItem("token", config->accessToken());
+
+    QString token = config->accessToken();
+    if (!token.isEmpty()) {
+        query.addQueryItem("token", token);
+    }
 
     foreach (const QString key, params.keys()) {
         query.addQueryItem(key, params.value(key));
@@ -290,7 +294,11 @@ QNetworkReply* SlackClient::executeGet(QString method, QMap<QString, QString> pa
 
 QNetworkReply* SlackClient::executePost(QString method, const QMap<QString, QString>& data) {
     QUrlQuery query;
-    query.addQueryItem("token", config->accessToken());
+
+    QString token = config->accessToken();
+    if (!token.isEmpty()) {
+        query.addQueryItem("token", token);
+    }
 
     foreach (const QString key, data.keys()) {
         query.addQueryItem(key, data.value(key));
@@ -405,6 +413,7 @@ void SlackClient::handleTestLoginReply() {
     QJsonObject data = getResult(reply);
 
     if (isError(data)) {
+        config->clearAccessToken();
         reply->deleteLater();
         emit testLoginFail();
         return;
@@ -421,9 +430,38 @@ void SlackClient::handleTestLoginReply() {
     reply->deleteLater();
 }
 
+void SlackClient::init() {
+  qDebug() << "Start init";
+  loadUsers();
+}
+
+void SlackClient::loadUsers() {
+  qDebug() << "Start load users";
+  QNetworkReply* reply = executeGet("users.list");
+  connect(reply, SIGNAL(finished()), this, SLOT(handleLoadUsersReply()));
+}
+
+void SlackClient::handleLoadUsersReply() {
+  QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+  QJsonObject data = getResult(reply);
+
+  if (isError(data)) {
+      qDebug() << "User load failed";
+      reply->deleteLater();
+      return;
+  }
+
+  parseUsers(data);
+  emit loadUsersSuccess();
+  qDebug() << "Load users completed";
+
+  loadChannels();
+  reply->deleteLater();
+}
+
 void SlackClient::start() {
-    qDebug() << "Start init";
-    QNetworkReply *reply = executeGet("rtm.start");
+    qDebug() << "Connect start";
+    QNetworkReply *reply = executeGet("rtm.connect");
     connect(reply, SIGNAL(finished()), this, SLOT(handleStartReply()));
 }
 
@@ -432,22 +470,21 @@ void SlackClient::handleStartReply() {
 
     QJsonObject data = getResult(reply);
 
+    QJsonDocument doc(data);
+    QString strJson(doc.toJson(QJsonDocument::Compact));
+    qDebug() << "Connect reply" << strJson;
+
     if (isError(data)) {
-        qDebug() << "Start result error";
+        qDebug() << "Connect result error";
         reply->deleteLater();
         emit disconnected();
         emit initFail();
         return;
     }
 
-    parseUsers(data);
-    parseBots(data);
-    parseChannels(data);
-    parseGroups(data);
-    parseChats(data);
-
     QUrl url(data.value("url").toString());
     stream->listen(url);
+    qDebug() << "Connect completed";
 
     Storage::clearChannelMessages();
     emit initSuccess();
@@ -503,7 +540,7 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
 }
 
 void SlackClient::parseUsers(QJsonObject data) {
-    foreach (const QJsonValue &value, data.value("users").toArray()) {
+    foreach (const QJsonValue &value, data.value("members").toArray()) {
         QJsonObject user = value.toObject();
 
         QVariantMap data;
@@ -587,6 +624,29 @@ QString SlackClient::historyMethod(QString type) {
     }
 }
 
+void SlackClient::loadChannels() {
+    qDebug() << "Channel load start";
+    QNetworkReply* reply = executeGet("channels.list");
+    connect(reply, SIGNAL(finished()), this, SLOT(handleLoadChannelsReply()));
+}
+
+void SlackClient::handleLoadChannelsReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    QJsonObject data = getResult(reply);
+
+    if (isError(data)) {
+        qDebug() << "Channel load failed";
+        reply->deleteLater();
+        return;
+    }
+
+    parseChannels(data);
+    qDebug() << "Channel load completed";
+
+    loadGroups();
+    reply->deleteLater();
+}
+
 void SlackClient::joinChannel(QString channelId) {
     QVariantMap channel = Storage::channel(QVariant(channelId));
 
@@ -626,6 +686,30 @@ void SlackClient::handleLeaveChannelReply() {
 
     reply->deleteLater();
 }
+
+void SlackClient::loadGroups() {
+  qDebug() << "Group load start";
+  QNetworkReply* reply = executeGet("groups.list");
+  connect(reply, SIGNAL(finished()), this, SLOT(handleLoadGroupsReply()));
+}
+
+void SlackClient::handleLoadGroupsReply() {
+  QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+  QJsonObject data = getResult(reply);
+
+  if (isError(data)) {
+      qDebug() << "Group load failed";
+      reply->deleteLater();
+      return;
+  }
+
+  parseGroups(data);
+  qDebug() << "Group load completed";
+
+  loadIms();
+  reply->deleteLater();
+}
+
 
 void SlackClient::leaveGroup(QString groupId) {
     QMap<QString,QString> params;
@@ -684,6 +768,52 @@ void SlackClient::handleCloseChatReply() {
     }
 
     reply->deleteLater();
+}
+
+void SlackClient::loadIms() {
+  qDebug() << "Im load start";
+  QNetworkReply* reply = executeGet("im.list");
+  connect(reply, SIGNAL(finished()), this, SLOT(handleLoadImsReply()));
+}
+
+void SlackClient::handleLoadImsReply() {
+  QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+  QJsonObject data = getResult(reply);
+
+  if (isError(data)) {
+      qDebug() << "Im load failed";
+      reply->deleteLater();
+      return;
+  }
+
+  parseChats(data);
+  qDebug() << "Im load completed";
+
+  loadMpims();
+  reply->deleteLater();
+}
+
+void SlackClient::loadMpims() {
+  qDebug() << "Mpim load start";
+  QNetworkReply* reply = executeGet("mpim.list");
+  connect(reply, SIGNAL(finished()), this, SLOT(handleLoadMpimsReply()));
+}
+
+void SlackClient::handleLoadMpimsReply() {
+  QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+  QJsonObject data = getResult(reply);
+
+  if (isError(data)) {
+      qDebug() << "Mpim load failed";
+      reply->deleteLater();
+      return;
+  }
+
+  parseGroups(data);
+  qDebug() << "Mpim load completed";
+
+  start();
+  reply->deleteLater();
 }
 
 void SlackClient::loadMessages(QString type, QString channelId) {

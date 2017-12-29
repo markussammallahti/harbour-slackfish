@@ -101,7 +101,7 @@ Page {
 
         if (Settings.hasUserInfo()) {
             loadMessage = qsTr("Loading")
-            Slack.Client.start()
+            Slack.Client.init()
         }
         else {
             Slack.Client.testLogin()
@@ -111,7 +111,7 @@ Page {
     function handleLoginTestSuccess(userId, teamId, teamName) {
         loadMessage = qsTr("Loading")
         Settings.setUserInfo(userId, teamId, teamName)
-        Slack.Client.start()
+        Slack.Client.init()
     }
 
     function handleLoginTestFail() {

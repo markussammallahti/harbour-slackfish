@@ -12,6 +12,7 @@ public:
 
     QString accessToken();
     void setAccessToken(QString accessToken);
+    void clearAccessToken();
     QString userId();
     void setUserId(QString userId);
 
