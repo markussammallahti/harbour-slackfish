@@ -78,7 +78,7 @@ QVariant FileModel::data(const QModelIndex &index, int role) const {
 }
 
 QString FileModel::getSearchPath() {
-    QString res = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    QString res = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
     return res;
 }
 

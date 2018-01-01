@@ -32,6 +32,7 @@ signals:
     void testLoginFail();
 
     void loadUsersSuccess();
+    void loadUsersFail();
 
     void accessTokenSuccess(QString userId, QString teamId, QString team);
     void accessTokenFail();
@@ -74,7 +75,6 @@ public slots:
     void handleTestLoginReply();
 
     void loadUsers();
-    void handleLoadUsersReply();
 
     void loadMessages(QString type, QString channelId);
     void handleLoadMessagesReply();
@@ -88,8 +88,7 @@ public slots:
     void markChannel(QString type, QString channelId, QString time);
     void handleMarkChannelReply();
 
-    void loadChannels();
-    void handleLoadChannelsReply();
+    void loadConversations();
 
     void joinChannel(QString channelId);
     void handleJoinChannelReply();
@@ -97,17 +96,8 @@ public slots:
     void leaveChannel(QString channelId);
     void handleLeaveChannelReply();
 
-    void loadGroups();
-    void handleLoadGroupsReply();
-
     void leaveGroup(QString groupId);
     void handleLeaveGroupReply();
-
-    void loadIms();
-    void handleLoadImsReply();
-
-    void loadMpims();
-    void handleLoadMpimsReply();
 
     void openChat(QString chatId);
     void handleOpenChatReply();
@@ -116,7 +106,6 @@ public slots:
     void handleCloseChatReply();
 
     void handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
-
 
     void handleStreamStart();
     void handleStreamEnd();
@@ -132,6 +121,8 @@ private:
     QNetworkReply *executePostWithFile(QString method, const QMap<QString, QString>&, QFile *file);
 
     QNetworkReply* executeGet(QString method, QMap<QString,QString> params = QMap<QString,QString>());
+
+    static QString toString(const QJsonObject &data);
 
     bool isOk(const QNetworkReply *reply);
     bool isError(const QJsonObject &data);
@@ -158,13 +149,9 @@ private:
 
     QVariantMap parseChannel(QJsonObject data);
     QVariantMap parseGroup(QJsonObject group);
+    QVariantMap parseChat(QJsonObject chat);
 
     void parseUsers(QJsonObject data);
-    void parseBots(QJsonObject data);
-    void parseChannels(QJsonObject data);
-    void parseGroups(QJsonObject data);
-    void parseChats(QJsonObject data);
-
     void findNewUsers(const QString &message);
 
     void sendNotification(QString channelId, QString title, QString content);

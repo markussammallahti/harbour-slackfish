@@ -25,6 +25,10 @@ PKGCONFIG += nemonotifications-qt5
 # Includes
 INCLUDEPATH += ./QtWebsocket
 
+QT += concurrent
+
+include(vendor/vendor.pri)
+
 # Check slack config
 
 CLIENT_ID = $$slack_client_id
@@ -38,7 +42,6 @@ if(isEmpty(CLIENT_SECRET)) {
 }
 DEFINES += SLACK_CLIENT_ID=\\\"$${CLIENT_ID}\\\"
 DEFINES += SLACK_CLIENT_SECRET=\\\"$${CLIENT_SECRET}\\\"
-
 
 SOURCES += src/harbour-slackfish.cpp \
     src/slackclient.cpp \
@@ -105,4 +108,8 @@ DISTFILES += \
     qml/pages/GroupLeaveDialog.qml \
     qml/pages/ChatSelect.qml \
     qml/dialogs/ImagePicker.qml \
-    qml/pages/FileSend.qml
+    qml/pages/FileSend.qml \
+    data/emoji.json
+
+RESOURCES += \
+    data.qrc

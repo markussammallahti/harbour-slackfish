@@ -1,8 +1,32 @@
 #include "messageformatter.h"
 
 #include <QRegularExpression>
+#include <QDebug>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 #include "storage.h"
+
+static QMap<QString, QString> emojiValues() {
+    Q_INIT_RESOURCE(data);
+
+    QFile file;
+    file.setFileName((":/data/data/emoji.json"));
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QString contents = file.readAll();
+    file.close();
+    QJsonDocument d = QJsonDocument::fromJson(contents.toUtf8());
+
+    QMap<QString,QString> map;
+    foreach (const QJsonValue &value, d.array()) {
+        map.insert(value.toObject().value("name").toString(), value.toObject().value("image").toString());
+    }
+    return map;
+}
+
+QMap<QString,QString> MessageFormatter::emojis = emojiValues();
 
 void MessageFormatter::replaceUserInfo(QString &message) {
     foreach (const QVariant &value, Storage::users()) {
@@ -62,16 +86,22 @@ void MessageFormatter::replaceMarkdown(QString &message) {
 }
 
 void MessageFormatter::replaceEmoji(QString &message) {
-    QMap<QString,QString> alternatives;
-    alternatives.insert(":slightly_smiling_face:", ":grinning:");
-    alternatives.insert(":slightly_frowning_face:", ":confused:");
+    QRegularExpression emojiPattern(":([\\w\\+\\-]+):(:[\\w\\+\\-]+:)?[\\?\\.!,]?");
+    QRegularExpressionMatchIterator i = emojiPattern.globalMatch(message);
 
-    foreach (QString from, alternatives.keys()) {
-        message.replace(from, alternatives.value(from));
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString name = match.captured(1);
+
+        if (MessageFormatter::emojis.contains(name)) {
+            QString image = MessageFormatter::emojis.value(name);
+            QString emoji = "<img src=\"http://emojistatic.github.io/images/32/" + image + "\" alt=\"" + name + "\" align=\"bottom\" width=\"32\" height=\"32\" />";
+            message.replace(":" + name + ":", emoji);
+        }
+        else {
+          qDebug() << "Missing emoji" << name;
+        }
     }
-
-    QRegularExpression emojiPattern(":([\\w\\+\\-]+):(:[\\w\\+\\-]+:)?[\\?\\.!]?");
-    message.replace(emojiPattern, "<img src=\"http://www.tortue.me/emoji/\\1.png\" alt=\"\\1\" align=\"bottom\" width=\"32\" height=\"32\" />");
 }
 
 void MessageFormatter::replaceTargetInfo(QString &message) {

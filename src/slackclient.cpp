@@ -13,6 +13,8 @@
 #include <QtNetwork/QNetworkConfigurationManager>
 #include <nemonotifications-qt5/notification.h>
 
+#include "asyncfuture.h"
+
 #include "slackclient.h"
 #include "storage.h"
 #include "messageformatter.h"
@@ -30,6 +32,11 @@ SlackClient::SlackClient(QObject *parent) : QObject(parent), appActive(true), ac
     connect(stream, SIGNAL(connected()), this, SLOT(handleStreamStart()));
     connect(stream, SIGNAL(disconnected()), this, SLOT(handleStreamEnd()));
     connect(stream, SIGNAL(messageReceived(QJsonObject)), this, SLOT(handleStreamMessage(QJsonObject)));
+}
+
+QString SlackClient::toString(const QJsonObject &data) {
+    QJsonDocument doc(data);
+    return doc.toJson(QJsonDocument::Compact);
 }
 
 void SlackClient::setAppActive(bool active) {
@@ -437,26 +444,25 @@ void SlackClient::init() {
 
 void SlackClient::loadUsers() {
   qDebug() << "Start load users";
-  QNetworkReply* reply = executeGet("users.list");
-  connect(reply, SIGNAL(finished()), this, SLOT(handleLoadUsersReply()));
-}
+  QMap<QString,QString> params;
+  params.insert("presence", "true");
+  QNetworkReply* reply = executeGet("users.list", params);
 
-void SlackClient::handleLoadUsersReply() {
-  QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-  QJsonObject data = getResult(reply);
-
-  if (isError(data)) {
+  connect(reply, &QNetworkReply::finished, [reply,this]() {
+    QJsonObject data = getResult(reply);
+    if (isError(data)) {
       qDebug() << "User load failed";
-      reply->deleteLater();
-      return;
-  }
+      emit loadUsersFail();
+    }
+    else {
+      qDebug() << "Load users completed";
+      parseUsers(data);
+      emit loadUsersSuccess();
+      loadConversations();
+    }
 
-  parseUsers(data);
-  emit loadUsersSuccess();
-  qDebug() << "Load users completed";
-
-  loadChannels();
-  reply->deleteLater();
+    reply->deleteLater();
+  });
 }
 
 void SlackClient::start() {
@@ -469,10 +475,7 @@ void SlackClient::handleStartReply() {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
 
     QJsonObject data = getResult(reply);
-
-    QJsonDocument doc(data);
-    QString strJson(doc.toJson(QJsonDocument::Compact));
-    qDebug() << "Connect reply" << strJson;
+    qDebug() << "Connect reply" << SlackClient::toString(data);
 
     if (isError(data)) {
         qDebug() << "Connect result error";
@@ -539,62 +542,50 @@ QVariantMap SlackClient::parseGroup(QJsonObject group) {
     return data;
 }
 
+QVariantMap SlackClient::parseChat(QJsonObject chat) {
+  QVariantMap data;
+
+  QVariant userId = chat.value("user").toVariant();
+  QVariantMap user = Storage::user(userId);
+
+  QString name;
+  if (userId.toString() == config->userId()) {
+    name = user.value("name").toString() + " (you)";
+  }
+  else {
+    name = user.value("name").toString();
+  }
+
+  data.insert("type", QVariant("im"));
+  data.insert("category", QVariant("chat"));
+  data.insert("id", chat.value("id").toVariant());
+  data.insert("userId", userId);
+  data.insert("name", QVariant(name));
+  data.insert("presence", user.value("presence"));
+  data.insert("isOpen", chat.value("is_open").toVariant());
+  data.insert("lastRead", chat.value("last_read").toVariant());
+  data.insert("unreadCount", chat.value("unread_count_display").toVariant());
+
+  return data;
+}
+
 void SlackClient::parseUsers(QJsonObject data) {
     foreach (const QJsonValue &value, data.value("members").toArray()) {
         QJsonObject user = value.toObject();
 
+        QVariant presence;
+        if (user.value("profile").toObject().value("always_active").toBool()) {
+            presence = QVariant("active");
+        }
+        else {
+            presence = user.value("presence").toVariant();
+        }
+
         QVariantMap data;
         data.insert("id", user.value("id").toVariant());
         data.insert("name", user.value("name").toVariant());
-        data.insert("presence", user.value("presence").toVariant());
+        data.insert("presence",presence);
         Storage::saveUser(data);
-    }
-}
-
-void SlackClient::parseBots(QJsonObject data) {
-    foreach (const QJsonValue &value, data.value("bots").toArray()) {
-        QJsonObject bot = value.toObject();
-
-        QVariantMap data;
-        data.insert("id", bot.value("id"));
-        data.insert("name", bot.value("name"));
-        data.insert("presence", QVariant("active"));
-        Storage::saveUser(data);
-    }
-}
-
-void SlackClient::parseChannels(QJsonObject data) {
-    foreach (const QJsonValue &value, data.value("channels").toArray()) {
-        QVariantMap data = parseChannel(value.toObject());
-        Storage::saveChannel(data);
-    }
-}
-
-void SlackClient::parseGroups(QJsonObject data) {
-    foreach (const QJsonValue &value, data.value("groups").toArray()) {
-        QVariantMap data = parseGroup(value.toObject());
-        Storage::saveChannel(data);
-    }
-}
-
-void SlackClient::parseChats(QJsonObject data) {
-    foreach (const QJsonValue &value, data.value("ims").toArray()) {
-        QJsonObject chat = value.toObject();
-        QVariantMap data;
-
-        QVariant userId = chat.value("user").toVariant();
-        QVariantMap user = Storage::user(userId);
-
-        data.insert("type", QVariant("im"));
-        data.insert("category", QVariant("chat"));
-        data.insert("id", chat.value("id").toVariant());
-        data.insert("userId", userId);
-        data.insert("name", user.value("name"));
-        data.insert("presence", user.value("presence"));
-        data.insert("isOpen", chat.value("is_open").toVariant());
-        data.insert("lastRead", chat.value("last_read").toVariant());
-        data.insert("unreadCount", chat.value("unread_count_display").toVariant());
-        Storage::saveChannel(data);
     }
 }
 
@@ -624,27 +615,67 @@ QString SlackClient::historyMethod(QString type) {
     }
 }
 
-void SlackClient::loadChannels() {
-    qDebug() << "Channel load start";
-    QNetworkReply* reply = executeGet("channels.list");
-    connect(reply, SIGNAL(finished()), this, SLOT(handleLoadChannelsReply()));
-}
+void SlackClient::loadConversations() {
+  qDebug() << "Conversation load start";
 
-void SlackClient::handleLoadChannelsReply() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+  QMap<QString,QString> params;
+  params.insert("types", "public_channel,private_channel,mpim,im");
+  QNetworkReply* reply = executeGet("conversations.list", params);
+
+  connect(reply, &QNetworkReply::finished, [reply,this]() {
     QJsonObject data = getResult(reply);
 
     if (isError(data)) {
-        qDebug() << "Channel load failed";
-        reply->deleteLater();
-        return;
+      qDebug() << "Conversation load failed";
+    }
+    else {
+      auto combinator = AsyncFuture::combine();
+
+      foreach (const QJsonValue &value, data.value("channels").toArray()) {
+        QJsonObject channel = value.toObject();
+
+        QString infoMethod;
+        if (channel.value("is_channel").toBool()) {
+          infoMethod = "channels.info";
+        }
+        else if (channel.value("is_group").toBool()) {
+          infoMethod = "groups.info";
+        }
+        else {
+          infoMethod = "conversations.info";
+        }
+
+        QMap<QString,QString> params;
+        params.insert("channel", channel.value("id").toString());
+        QNetworkReply* infoReply = executeGet(infoMethod, params);
+
+        combinator << AsyncFuture::observe(infoReply, &QNetworkReply::finished).future();
+        connect(infoReply, &QNetworkReply::finished, [infoReply,infoMethod,this]() {
+            QJsonObject infoData = getResult(infoReply).value(infoMethod == "groups.info" ? "group" : "channel").toObject();
+            QVariantMap channel;
+
+            if (infoData.value("is_im").toBool()) {
+              channel = parseChat(infoData);
+            }
+            else if (infoData.value("is_channel").toBool()) {
+              channel = parseChannel(infoData);
+            }
+            else {
+              channel = parseGroup(infoData);
+            }
+
+            Storage::saveChannel(channel);
+            infoReply->deleteLater();
+        });
+      }
+
+      AsyncFuture::observe(combinator.future()).subscribe([this]() {
+        start();
+      });
     }
 
-    parseChannels(data);
-    qDebug() << "Channel load completed";
-
-    loadGroups();
     reply->deleteLater();
+  });
 }
 
 void SlackClient::joinChannel(QString channelId) {
@@ -686,30 +717,6 @@ void SlackClient::handleLeaveChannelReply() {
 
     reply->deleteLater();
 }
-
-void SlackClient::loadGroups() {
-  qDebug() << "Group load start";
-  QNetworkReply* reply = executeGet("groups.list");
-  connect(reply, SIGNAL(finished()), this, SLOT(handleLoadGroupsReply()));
-}
-
-void SlackClient::handleLoadGroupsReply() {
-  QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-  QJsonObject data = getResult(reply);
-
-  if (isError(data)) {
-      qDebug() << "Group load failed";
-      reply->deleteLater();
-      return;
-  }
-
-  parseGroups(data);
-  qDebug() << "Group load completed";
-
-  loadIms();
-  reply->deleteLater();
-}
-
 
 void SlackClient::leaveGroup(QString groupId) {
     QMap<QString,QString> params;
@@ -768,52 +775,6 @@ void SlackClient::handleCloseChatReply() {
     }
 
     reply->deleteLater();
-}
-
-void SlackClient::loadIms() {
-  qDebug() << "Im load start";
-  QNetworkReply* reply = executeGet("im.list");
-  connect(reply, SIGNAL(finished()), this, SLOT(handleLoadImsReply()));
-}
-
-void SlackClient::handleLoadImsReply() {
-  QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-  QJsonObject data = getResult(reply);
-
-  if (isError(data)) {
-      qDebug() << "Im load failed";
-      reply->deleteLater();
-      return;
-  }
-
-  parseChats(data);
-  qDebug() << "Im load completed";
-
-  loadMpims();
-  reply->deleteLater();
-}
-
-void SlackClient::loadMpims() {
-  qDebug() << "Mpim load start";
-  QNetworkReply* reply = executeGet("mpim.list");
-  connect(reply, SIGNAL(finished()), this, SLOT(handleLoadMpimsReply()));
-}
-
-void SlackClient::handleLoadMpimsReply() {
-  QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-  QJsonObject data = getResult(reply);
-
-  if (isError(data)) {
-      qDebug() << "Mpim load failed";
-      reply->deleteLater();
-      return;
-  }
-
-  parseGroups(data);
-  qDebug() << "Mpim load completed";
-
-  start();
-  reply->deleteLater();
 }
 
 void SlackClient::loadMessages(QString type, QString channelId) {
@@ -978,8 +939,16 @@ QVariantMap SlackClient::user(const QJsonObject &data) {
     if (type == "bot_message") {
         userId = data.value("bot_id").toVariant();
     }
+    else if (type == "file_comment") {
+        userId = data.value("comment").toObject().value("user").toVariant();
+    }
     else {
         userId = data.value("user").toVariant();
+    }
+
+    if (!userId.isValid()) {
+        qDebug() << "User not found for message";
+        qDebug() << data;
     }
 
     QVariantMap userData = Storage::user(userId);

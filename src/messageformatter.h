@@ -15,6 +15,8 @@ public:
     static void replaceMarkdown(QString &message);
     static void replaceEmoji(QString &message);
 
+    static QMap<QString,QString> emojis;
+
 signals:
 
 public slots:

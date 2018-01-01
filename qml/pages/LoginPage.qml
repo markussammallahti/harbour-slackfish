@@ -7,7 +7,7 @@ import "Settings.js" as Settings
 Page {
     id: page
 
-    property string startUrl: "https://slack.com/oauth/authorize?scope=client&client_id=19437480772.45165537666&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth%2Fcallback"
+    property string startUrl: "https://slack.com/oauth/authorize?scope=client&client_id=64034884849.292601783733&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth%2Fcallback"
 
     SilicaWebView {
         id: webView

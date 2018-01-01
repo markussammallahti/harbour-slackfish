@@ -1,0 +1,10 @@
+{
+  "name": "",
+  "description": "",
+  "dependencies": [
+    "async.future.pri@0.3.6.5"
+  ],
+  "license": "NONE",
+  "pri_filename": "",
+  "webpage": ""
+}
