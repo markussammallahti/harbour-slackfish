@@ -21,6 +21,10 @@ SlackStream::~SlackStream() {
     }
 }
 
+void SlackStream::disconnectFromHost() {
+  webSocket->disconnectFromHost();
+}
+
 void SlackStream::listen(QUrl url) {
     qDebug() << "Connect socket" << url;
     QString socketUrl = url.scheme() + "://" + url.host();

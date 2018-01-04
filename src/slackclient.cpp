@@ -85,9 +85,13 @@ void SlackClient::handleStreamStart() {
 
 void SlackClient::handleStreamEnd() {
     qDebug() << "Stream ended";
-    emit reconnecting();
-    reconnectTimer->setSingleShot(true);
-    reconnectTimer->start(1000);
+
+    if (!config->accessToken().isEmpty()) {
+        qDebug() << "Stream reconnect scheduled";
+        emit reconnecting();
+        reconnectTimer->setSingleShot(true);
+        reconnectTimer->start(1000);
+    }
 }
 
 void SlackClient::handleStreamMessage(QJsonObject message) {
@@ -396,6 +400,12 @@ void SlackClient::handleAccessTokenReply() {
     emit accessTokenSuccess(userId, teamId, teamName);
 
     reply->deleteLater();
+}
+
+void SlackClient::logout() {
+    config->clearAccessToken();
+    stream->disconnectFromHost();
+    Storage::clear();
 }
 
 void SlackClient::testLogin() {

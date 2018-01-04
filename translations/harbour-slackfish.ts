@@ -41,6 +41,10 @@
         <source>Open chat</source>
         <translation>Open chat</translation>
     </message>
+    <message>
+        <source>Logout</source>
+        <translation>Logout</translation>
+    </message>
 </context>
 <context>
     <name>ChannelListView</name>

@@ -73,6 +73,7 @@ public slots:
 
     void testLogin();
     void handleTestLoginReply();
+    void logout();
 
     void loadUsers();
 

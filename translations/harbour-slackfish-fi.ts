@@ -41,6 +41,10 @@
         <source>Open chat</source>
         <translation>Avaa keskustelu</translation>
     </message>
+    <message>
+        <source>Logout</source>
+        <translation>Kirjaudu ulos</translation>
+    </message>
 </context>
 <context>
     <name>ChannelListView</name>

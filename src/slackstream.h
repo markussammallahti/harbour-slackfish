@@ -23,6 +23,7 @@ signals:
     void messageReceived(QJsonObject message);
 
 public slots:
+    void disconnectFromHost();
     void listen(QUrl url);
     void checkConnection();
     void handleListerStart();

@@ -21,6 +21,8 @@ public:
     static void appendChannelMessage(QVariant channelId, QVariantMap message);
     static void clearChannelMessages();
 
+    static void clear();
+
 signals:
 
 public slots:

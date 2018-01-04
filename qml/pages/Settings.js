@@ -10,6 +10,10 @@ function setUserInfo(userId, teamId, teamName) {
     }
 }
 
+function unsetUserInfo() {
+    userInfo = null;
+}
+
 function getUserInfo() {
     return userInfo;
 }

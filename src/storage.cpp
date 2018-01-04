@@ -51,3 +51,9 @@ void Storage::appendChannelMessage(QVariant channelId, QVariantMap message) {
 void Storage::clearChannelMessages() {
     channelMessageMap.clear();
 }
+
+void Storage::clear() {
+    userMap.clear();
+    channelMap.clear();
+    channelMessageMap.clear();
+}
