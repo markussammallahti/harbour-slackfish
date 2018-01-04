@@ -29,8 +29,10 @@ QT += concurrent
 
 include(vendor/vendor.pri)
 
-# Check slack config
+VERSION = 1.3
+DEFINES += APP_VERSION=\"$$VERSION\"
 
+# Check slack config
 CLIENT_ID = $$slack_client_id
 CLIENT_SECRET = $$slack_client_secret
 if(isEmpty(CLIENT_ID)) {

@@ -24,7 +24,7 @@ Page {
 
             Label {
                 x: page.padding
-                text: "Slackfish 1.3"
+                text: "Slackfish " + applicationVersion
                 color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeExtraLarge
             }
