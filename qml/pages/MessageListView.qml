@@ -1,7 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import harbour.slackfish 1.0 as Slack
-import "Message.js" as Message
 
 SilicaListView {
     property alias atBottom: listView.atYEnd
@@ -42,7 +41,7 @@ SilicaListView {
     delegate: MessageListItem {}
 
     section {
-        property: "day"
+        property: "timegroup"
         criteria: ViewSection.FullString
         delegate: SectionHeader {
             text: section
@@ -59,14 +58,14 @@ SilicaListView {
 
     onAppActiveChanged: {
         if (appActive && atBottom && messageListModel.count) {
-            latestRead = messageListModel.get(messageListModel.count - 1).time
+            latestRead = messageListModel.get(messageListModel.count - 1).timestamp
             readTimer.restart()
         }
     }
 
     onMovementEnded: {
         if (atBottom && messageListModel.count) {
-            latestRead = messageListModel.get(messageListModel.count - 1).time
+            latestRead = messageListModel.get(messageListModel.count - 1).timestamp
             readTimer.restart()
         }
     }
@@ -102,10 +101,8 @@ SilicaListView {
 
     function handleLoadSuccess(channelId, messages) {
         if (channelId === channel.id) {
-            messages.sort(Message.compareByTime)
             messageListModel.clear()
             messages.forEach(function(message) {
-                message.day = Message.getDisplayDate(message)
                 messageListModel.append(message)
             })
             listView.positionViewAtEnd()
@@ -113,7 +110,7 @@ SilicaListView {
             loadCompleted()
 
             if (messageListModel.count) {
-                latestRead = messageListModel.get(messageListModel.count - 1).time
+                latestRead = messageListModel.get(messageListModel.count - 1).timestamp
                 readTimer.restart()
             }
         }
@@ -122,14 +119,13 @@ SilicaListView {
     function handleMessageReceived(message) {
         if (message.type === "message" && message.channel === channel.id) {
             var isAtBottom = atBottom
-            message.day = Message.getDisplayDate(message)
             messageListModel.append(message)
 
             if (isAtBottom) {
                 listView.positionViewAtEnd()
 
                 if (appActive) {
-                    latestRead = message.time
+                    latestRead = message.timestamp
                     readTimer.restart()
                 }
             }

@@ -28,7 +28,7 @@ ListItem {
 
             Label {
                 anchors.right: parent.right
-                text: new Date(parseInt(time, 10) * 1000).toLocaleString(Qt.locale(), "H:mm")
+                text: time.toLocaleString(Qt.locale(), "H:mm")
                 font.pixelSize: Theme.fontSizeTiny
                 color: infoColor
             }

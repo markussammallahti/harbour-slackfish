@@ -1,6 +1,7 @@
 #include <QUrl>
 #include <QUrlQuery>
 #include <QDebug>
+#include <QDateTime>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -181,7 +182,7 @@ void SlackClient::parseMessageUpdate(QJsonObject message) {
 
     QVariantMap channel = Storage::channel(channelId);
 
-    QString messageTime = data.value("time").toString();
+    QString messageTime = data.value("timestamp").toString();
     QString latestRead = channel.value("lastRead").toString();
 
     if (messageTime > latestRead) {
@@ -820,6 +821,9 @@ void SlackClient::handleLoadMessagesReply() {
         QJsonObject message = value.toObject();
         messages << getMessageData(message);
     }
+    std::sort(messages.begin(), messages.end(), [](const QVariant &a, const QVariant &b) -> bool {
+        return a.toMap().value("time").toDateTime() < b.toMap().value("time").toDateTime();
+    });
 
     QString channelId = reply->property("channelId").toString();
     Storage::setChannelMessages(channelId, messages);
@@ -930,9 +934,19 @@ void SlackClient::handlePostImage() {
 }
 
 QVariantMap SlackClient::getMessageData(const QJsonObject message) {
+    qlonglong multiplier = 1000;
+    QStringList timeParts = message.value("ts").toString().split(".");
+    QString timePart = timeParts.value(0);
+    QString indexPart = timeParts.value(1);
+
+    qlonglong timestamp = timePart.toLongLong() * multiplier + indexPart.toLongLong();
+    QDateTime time = QDateTime::fromMSecsSinceEpoch(timestamp);
+
     QVariantMap data;
     data.insert("type", message.value("type").toVariant());
-    data.insert("time", message.value("ts").toVariant());
+    data.insert("time", QVariant::fromValue(time));
+    data.insert("timegroup", QVariant::fromValue(time.toString("MMMM d, yyyy")));
+    data.insert("timestamp", message.value("ts").toVariant());
     data.insert("channel", message.value("channel").toVariant());
     data.insert("user", user(message));
     data.insert("attachments", getAttachments(message));
