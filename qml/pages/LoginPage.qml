@@ -7,27 +7,28 @@ import "Settings.js" as Settings
 Page {
     id: page
 
+    property string processId: Math.random().toString(36).substring(7)
     property string startUrl: "https://slack.com/oauth/authorize?scope=client&client_id=64034884849.292601783733&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth%2Fcallback"
 
     SilicaWebView {
         id: webView
         anchors.fill: parent
-        url: page.startUrl
+        url: page.startUrl + "&state=" + page.processId
 
         header: PageHeader {
             title: "Sign in with Slack"
         }
 
         onNavigationRequested: {
-            if (request.url.toString().indexOf('http://localhost:3000/oauth/callback') !== -1) {
+            if (isReturnUrl(request.url)) {
                 visible = false
                 request.action = WebView.IgnoreRequest
 
-                if (request.url.toString().indexOf('error=') !== -1) {
-                    pageStack.pop(undefined, PageStackAction.Animated)
+                if (isSuccessUrl(request.url)) {
+                    Slack.Client.fetchAccessToken(request.url)
                 }
                 else {
-                    Slack.Client.fetchAccessToken(request.url)
+                    pageStack.pop(undefined, PageStackAction.Animated)
                 }
             }
             else {
@@ -44,6 +45,14 @@ Page {
     Component.onDestruction: {
         Slack.Client.onAccessTokenSuccess.disconnect(handleAccessTokenSuccess)
         Slack.Client.onAccessTokenFail.disconnect(handleAccessTokenFail)
+    }
+
+    function isReturnUrl(url) {
+        return url.toString().indexOf('http://localhost:3000/oauth/callback') !== -1
+    }
+
+    function isSuccessUrl(url) {
+        return url.toString().indexOf('error=') === -1 && url.toString().indexOf('state=' + page.processId) !== -1
     }
 
     function handleAccessTokenSuccess(userId, teamId, teamName) {
