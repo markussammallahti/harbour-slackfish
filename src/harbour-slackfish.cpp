@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonType<SlackClient>("harbour.slackfish", 1, 0, "Client", slack_client_provider);
 
     view->rootContext()->setContextProperty("applicationVersion", APP_VERSION);
+    view->rootContext()->setContextProperty("slackClientId", SLACK_CLIENT_ID);
     view->rootContext()->setContextProperty("fileModel", new FileModel());
 
     view->setSource(SailfishApp::pathTo("qml/harbour-slackfish.qml"));
