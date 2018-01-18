@@ -95,7 +95,7 @@ void MessageFormatter::replaceEmoji(QString &message) {
 
         if (MessageFormatter::emojis.contains(name)) {
             QString image = MessageFormatter::emojis.value(name);
-            QString emoji = "<img src=\"http://emojistatic.github.io/images/32/" + image + "\" alt=\"" + name + "\" align=\"bottom\" width=\"32\" height=\"32\" />";
+            QString emoji = "<img src=\"http://emojistatic.github.io/images/32/" + image + "\" alt=\"" + name + "\" align=\"bottom\" width=\"64\" height=\"64\" />";
             message.replace(":" + name + ":", emoji);
         }
         else {
