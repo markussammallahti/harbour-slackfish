@@ -64,47 +64,29 @@ signals:
 
 public slots:
     void init();
-
     void start();
-    void handleStartReply();
+    void reconnect();
 
     void fetchAccessToken(QUrl url);
     void handleAccessTokenReply();
 
     void testLogin();
     void handleTestLoginReply();
-    void logout();
-
-    void loadUsers();
 
     void loadMessages(QString type, QString channelId);
     void handleLoadMessagesReply();
 
-    void postMessage(QString channelId, QString content);
-    void handlePostMessageReply();
-
-    void postImage(QString channelId, QString imagePath, QString title, QString comment);
-    void handlePostImage();
-
-    void markChannel(QString type, QString channelId, QString time);
-    void handleMarkChannelReply();
-
+    void logout();
+    void loadUsers();
     void loadConversations();
-
+    void markChannel(QString type, QString channelId, QString time);
     void joinChannel(QString channelId);
-    void handleJoinChannelReply();
-
     void leaveChannel(QString channelId);
-    void handleLeaveChannelReply();
-
     void leaveGroup(QString groupId);
-    void handleLeaveGroupReply();
-
     void openChat(QString chatId);
-    void handleOpenChatReply();
-
     void closeChat(QString chatId);
-    void handleCloseChatReply();
+    void postMessage(QString channelId, QString content);
+    void postImage(QString channelId, QString imagePath, QString title, QString comment);
 
     void handleNetworkAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
 
@@ -112,7 +94,6 @@ public slots:
     void handleStreamEnd();
     void handleStreamMessage(QJsonObject message);
 
-    void reconnect();
 
 private:
     bool appActive;
