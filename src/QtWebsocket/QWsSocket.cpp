@@ -394,13 +394,13 @@ void QWsSocket::processHandshake()
 
 	// If the mandatory params are not setted, we abord the connection to the Websocket server
 	if (!handshake.isValid()
-		|| (_version >= WS_V4 && (QWsSocket::computeAcceptV4(key) != handshake.accept))
-		|| (_version == WS_V0 && (QWsSocket::computeAcceptV0(key1, key2, key3) != handshake.accept)))
+	    || (_version >= WS_V4 && (QWsSocket::computeAcceptV4(key) != handshake.accept))
+	    || (_version == WS_V0 && (QWsSocket::computeAcceptV0(key1, key2, key3) != handshake.accept)))
 	{
 		emit error(QAbstractSocket::ConnectionRefusedError);
 		return;
 	}
-	
+
 	accept = handshake.accept;
 
 	// handshake procedure succeeded
@@ -1071,12 +1071,13 @@ QByteArray QWsSocket::composeHeader(bool end, Opcode opcode, quint64 payloadLeng
 QString QWsSocket::composeOpeningHandShakeV13(QString resourceName, QString host, QByteArray key, QString origin, QString protocol, QString extensions)
 {
 	QString hs;
-    hs += QString("GET %1%2 HTTP/1.1\r\n").arg(resourceName).arg(resourceName.endsWith('/') ? "" : "");
+	hs += QString("GET %1 HTTP/1.1\r\n").arg(resourceName);
 	hs += QString("Host: %1\r\n").arg(host);
 	hs += QLatin1String("Upgrade: websocket\r\n");
 	hs += QLatin1String("Connection: Upgrade\r\n");
 	hs += QString("Sec-WebSocket-Key: %1\r\n").arg(QLatin1String(key));
 	hs += QLatin1String("Sec-WebSocket-Version: 13\r\n");
+
 	if (!origin.isEmpty())
 	{
 		hs += QString("Origin: %1\r\n").arg(origin);
@@ -1089,7 +1090,9 @@ QString QWsSocket::composeOpeningHandShakeV13(QString resourceName, QString host
 	{
 		hs += QString("Sec-WebSocket-Extensions: %1\r\n").arg(extensions);
 	}
+
 	hs += QLatin1String("\r\n");
+
 	return hs;
 }
 

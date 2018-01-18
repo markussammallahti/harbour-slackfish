@@ -10,6 +10,7 @@ SlackStream::SlackStream(QObject *parent) : QObject(parent), isConnected(false),
     connect(webSocket, SIGNAL(connected()), this, SLOT(handleListerStart()));
     connect(webSocket, SIGNAL(disconnected()), this, SLOT(handleListerEnd()));
     connect(webSocket, SIGNAL(frameReceived(QString)), this, SLOT(handleMessage(QString)));
+    connect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleError(QAbstractSocket::SocketError)));
     connect(checkTimer, SIGNAL(timeout()), this, SLOT(checkConnection()));
 }
 
@@ -22,13 +23,21 @@ SlackStream::~SlackStream() {
 }
 
 void SlackStream::disconnectFromHost() {
-  webSocket->disconnectFromHost();
+    qDebug() << "Disconnecting socket";
+    webSocket->disconnectFromHost();
 }
 
 void SlackStream::listen(QUrl url) {
-    qDebug() << "Connect socket" << url;
     QString socketUrl = url.scheme() + "://" + url.host();
-    webSocket->setResourceName(url.path());
+    QString resource = url.path();
+
+    if (url.hasQuery()) {
+        resource += "?" + url.query();
+    }
+
+    qDebug() << "Socket URL" << socketUrl << resource;
+
+    webSocket->setResourceName(resource);
     webSocket->connectToHost(socketUrl);
 }
 
@@ -43,6 +52,9 @@ void SlackStream::checkConnection() {
         QJsonDocument document(values);
         QByteArray data = document.toJson(QJsonDocument::Compact);
         webSocket->write(QString(data));
+    }
+    else {
+        qDebug() << "Socket not connected, skiping connection check";
     }
 }
 
@@ -72,4 +84,8 @@ void SlackStream::handleMessage(QString message) {
     }
 
     emit messageReceived(document.object());
+}
+
+void SlackStream::handleError(QAbstractSocket::SocketError error) {
+    qDebug() << "Socket error" << error;
 }

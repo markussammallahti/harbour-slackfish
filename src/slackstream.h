@@ -29,6 +29,7 @@ public slots:
     void handleListerStart();
     void handleListerEnd();
     void handleMessage(QString message);
+    void handleError(QAbstractSocket::SocketError error);
 
 private:
     QPointer<QtWebsocket::QWsSocket> webSocket;
