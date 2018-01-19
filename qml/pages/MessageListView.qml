@@ -30,6 +30,24 @@ SilicaListView {
         }
     }
 
+    WorkerScript {
+        id: loader
+        source: "MessageLoader.js"
+
+        onMessage: {
+            if (messageObject.op === 'replace') {
+                listView.positionViewAtEnd()
+                inputEnabled = true
+                loadCompleted()
+
+                if (messageListModel.count) {
+                    latestRead = messageListModel.get(messageListModel.count - 1).timestamp
+                    readTimer.restart()
+                }
+            }
+        }
+    }
+
     header: PageHeader {
         title: channel.name
     }
@@ -101,18 +119,11 @@ SilicaListView {
 
     function handleLoadSuccess(channelId, messages) {
         if (channelId === channel.id) {
-            messageListModel.clear()
-            messages.forEach(function(message) {
-                messageListModel.append(message)
+            loader.sendMessage({
+                op: 'replace',
+                model: messageListModel,
+                messages: messages
             })
-            listView.positionViewAtEnd()
-            inputEnabled = true
-            loadCompleted()
-
-            if (messageListModel.count) {
-                latestRead = messageListModel.get(messageListModel.count - 1).timestamp
-                readTimer.restart()
-            }
         }
     }
 
