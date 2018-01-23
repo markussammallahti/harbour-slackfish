@@ -81,7 +81,6 @@ public slots:
 
     void logout();
     void loadUsers();
-    void loadConversations();
     void markChannel(QString type, QString channelId, QString time);
     void joinChannel(QString channelId);
     void leaveChannel(QString channelId);
@@ -112,6 +111,8 @@ private:
     bool isOk(const QNetworkReply *reply);
     bool isError(const QJsonObject &data);
     QJsonObject getResult(QNetworkReply *reply);
+
+    void loadConversations(QString cursor = QString());
 
     void parseMessageUpdate(QJsonObject message);
     void parseChannelUpdate(QJsonObject message);

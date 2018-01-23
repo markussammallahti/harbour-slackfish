@@ -621,13 +621,18 @@ QString SlackClient::historyMethod(QString type) {
     }
 }
 
-void SlackClient::loadConversations() {
-  qDebug() << "Conversation load start";
+void SlackClient::loadConversations(QString cursor) {
+  qDebug() << "Conversation load start" << cursor;
 
   QMap<QString,QString> params;
   params.insert("types", "public_channel,private_channel,mpim,im");
-  QNetworkReply* reply = executeGet("conversations.list", params);
+  params.insert("limit", "100");
 
+  if (!cursor.isEmpty()) {
+      params.insert("cursor", cursor);
+  }
+
+  QNetworkReply* reply = executeGet("conversations.list", params);
   connect(reply, &QNetworkReply::finished, [reply,this]() {
     QJsonObject data = getResult(reply);
 
@@ -636,6 +641,7 @@ void SlackClient::loadConversations() {
     }
     else {
       auto combinator = AsyncFuture::combine();
+      QString nextCursor = data.value("response_metadata").toObject().value("next_cursor").toString();
 
       foreach (const QJsonValue &value, data.value("channels").toArray()) {
         QJsonObject channel = value.toObject();
@@ -675,8 +681,13 @@ void SlackClient::loadConversations() {
         });
       }
 
-      AsyncFuture::observe(combinator.future()).subscribe([this]() {
-        start();
+      AsyncFuture::observe(combinator.future()).subscribe([nextCursor,this]() {
+          if (nextCursor.isEmpty()) {
+              start();
+          }
+          else {
+              loadConversations(nextCursor);
+          }
       });
     }
 
