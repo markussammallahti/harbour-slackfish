@@ -29,8 +29,8 @@ QT += concurrent
 
 include(vendor/vendor.pri)
 
-VERSION = 1.4
-DEFINES += APP_VERSION=\"$$VERSION\"
+VERSION = "1.4.1"
+DEFINES += APP_VERSION=\\\"$${VERSION}\\\"
 
 # Check slack config
 CLIENT_ID = $$slack_client_id
