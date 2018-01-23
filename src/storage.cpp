@@ -42,6 +42,12 @@ void Storage::setChannelMessages(QVariant channelId, QVariantList messages) {
     channelMessageMap.insert(channelId.toString(), messages);
 }
 
+void Storage::prependChannelMessages(QVariant channelId, QVariantList messages) {
+    QVariantList existing = channelMessages(channelId);
+    messages.append(existing);
+    setChannelMessages(channelId, messages);
+}
+
 void Storage::appendChannelMessage(QVariant channelId, QVariantMap message) {
     QVariantList messages = channelMessages(channelId);
     messages.append(message);

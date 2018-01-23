@@ -768,15 +768,42 @@ void SlackClient::closeChat(QString chatId) {
     });
 }
 
+void SlackClient::loadHistory(QString type, QString channelId, QString latest) {
+  QMap<QString,QString> params;
+  params.insert("channel", channelId);
+  params.insert("count", "20");
+  params.insert("latest", latest);
+  params.insert("inclusive", "0");
+
+  QNetworkReply* reply = executeGet(historyMethod(type), params);
+  connect(reply, &QNetworkReply::finished, [reply,channelId,this]() {
+      QJsonObject data = getResult(reply);
+
+      if (isError(data)) {
+          reply->deleteLater();
+          emit loadHistoryFail();
+          return;
+      }
+
+      QVariantList messages = parseMessages(data);
+      bool hasMore = data.value("has_more").toBool();
+      Storage::prependChannelMessages(channelId, messages);
+
+      emit loadHistorySuccess(channelId, messages, hasMore);
+      reply->deleteLater();
+  });
+}
+
 void SlackClient::loadMessages(QString type, QString channelId) {
     if (Storage::channelMessagesExist(channelId)) {
         QVariantList messages = Storage::channelMessages(channelId);
-        emit loadMessagesSuccess(channelId, messages);
+        emit loadMessagesSuccess(channelId, messages, true);
         return;
     }
 
     QMap<QString,QString> params;
     params.insert("channel", channelId);
+    params.insert("count", "20");
 
     QNetworkReply* reply = executeGet(historyMethod(type), params);
     reply->setProperty("channelId", channelId);
@@ -794,6 +821,16 @@ void SlackClient::handleLoadMessagesReply() {
         return;
     }
 
+    QVariantList messages = parseMessages(data);
+    bool hasMore = data.value("has_more").toBool();
+    QString channelId = reply->property("channelId").toString();
+    Storage::setChannelMessages(channelId, messages);
+
+    emit loadMessagesSuccess(channelId, messages, hasMore);
+    reply->deleteLater();
+}
+
+QVariantList SlackClient::parseMessages(const QJsonObject data) {
     QJsonArray messageList = data.value("messages").toArray();
     QVariantList messages;
 
@@ -805,11 +842,7 @@ void SlackClient::handleLoadMessagesReply() {
         return a.toMap().value("time").toDateTime() < b.toMap().value("time").toDateTime();
     });
 
-    QString channelId = reply->property("channelId").toString();
-    Storage::setChannelMessages(channelId, messages);
-
-    emit loadMessagesSuccess(channelId, messages);
-    reply->deleteLater();
+    return messages;
 }
 
 QString SlackClient::markMethod(QString type) {

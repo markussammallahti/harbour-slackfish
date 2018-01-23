@@ -37,8 +37,10 @@ signals:
     void accessTokenSuccess(QString userId, QString teamId, QString team);
     void accessTokenFail();
 
-    void loadMessagesSuccess(QString channelId, QVariantList messages);
+    void loadMessagesSuccess(QString channelId, QVariantList messages, bool hasMore);
     void loadMessagesFail();
+    void loadHistorySuccess(QString channelId, QVariantList messages, bool hasMore);
+    void loadHistoryFail();
 
     void initFail();
     void initSuccess();
@@ -73,6 +75,7 @@ public slots:
     void testLogin();
     void handleTestLoginReply();
 
+    void loadHistory(QString type, QString channelId, QString latest);
     void loadMessages(QString type, QString channelId);
     void handleLoadMessagesReply();
 
@@ -120,6 +123,7 @@ private:
     void parsePresenceChange(QJsonObject message);
     void parseNotification(QJsonObject message);
 
+    QVariantList parseMessages(const QJsonObject data);
     QVariantMap getMessageData(const QJsonObject message);
 
     QString getContent(QJsonObject message);

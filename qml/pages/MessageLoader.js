@@ -8,10 +8,15 @@ WorkerScript.onMessage = function(message) {
             model.append(m);
         });
     }
+    else if (message.op === 'prepend') {
+        messages.reverse().forEach(function(m) {
+            model.insert(0, m);
+        });
+    }
 
     model.sync();
 
     WorkerScript.sendMessage({
-        op: 'replace'
+        op: message.op
     });
 }

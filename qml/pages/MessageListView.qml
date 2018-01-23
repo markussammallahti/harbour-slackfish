@@ -8,6 +8,9 @@ SilicaListView {
 
     property bool appActive: Qt.application.state === Qt.ApplicationActive
     property bool inputEnabled: false
+    property bool hasMoreMessages: false
+    property bool loading: false
+    property bool canLoadMore: hasMoreMessages && !loading
     property string latestRead: ""
 
     signal loadCompleted()
@@ -16,6 +19,16 @@ SilicaListView {
     id: listView
     anchors.fill: parent
     spacing: Theme.paddingLarge
+    currentIndex: -1
+
+    BusyIndicator {
+        visible: loading && hasMoreMessages
+        running: visible
+        size: BusyIndicatorSize.Medium
+        anchors.topMargin: Theme.paddingLarge
+        anchors.top: listView.top
+        anchors.horizontalCenter: listView.horizontalCenter
+    }
 
     VerticalScrollDecorator {}
 
@@ -38,12 +51,16 @@ SilicaListView {
             if (messageObject.op === 'replace') {
                 listView.positionViewAtEnd()
                 inputEnabled = true
+                loading = false
                 loadCompleted()
 
                 if (messageListModel.count) {
                     latestRead = messageListModel.get(messageListModel.count - 1).timestamp
                     readTimer.restart()
                 }
+            }
+            else if (messageObject.op === 'prepend') {
+                loading = false
             }
         }
     }
@@ -81,6 +98,14 @@ SilicaListView {
         }
     }
 
+    onContentYChanged: {
+        var y = (contentY - originY) * (height / contentHeight)
+
+        if (canLoadMore && y < Screen.height / 3) {
+            loadHistory()
+        }
+    }
+
     onMovementEnded: {
         if (atBottom && messageListModel.count) {
             latestRead = messageListModel.get(messageListModel.count - 1).timestamp
@@ -91,12 +116,14 @@ SilicaListView {
     Component.onCompleted: {
         Slack.Client.onInitSuccess.connect(handleReload)
         Slack.Client.onLoadMessagesSuccess.connect(handleLoadSuccess)
+        Slack.Client.onLoadHistorySuccess.connect(handleHistorySuccess)
         Slack.Client.onMessageReceived.connect(handleMessageReceived)
     }
 
     Component.onDestruction: {
         Slack.Client.onInitSuccess.disconnect(handleReload)
         Slack.Client.onLoadMessagesSuccess.disconnect(handleLoadSuccess)
+        Slack.Client.onLoadHistorySuccess.disconnect(handleHistorySuccess)
         Slack.Client.onMessageReceived.disconnect(handleMessageReceived)
     }
 
@@ -114,13 +141,33 @@ SilicaListView {
     }
 
     function loadMessages() {
+        loading = true
         Slack.Client.loadMessages(channel.type, channel.id)
     }
 
-    function handleLoadSuccess(channelId, messages) {
+    function loadHistory() {
+        if (messageListModel.count) {
+            loading = true
+            Slack.Client.loadHistory(channel.type, channel.id, messageListModel.get(0).timestamp)
+        }
+    }
+
+    function handleLoadSuccess(channelId, messages, hasMore) {
         if (channelId === channel.id) {
+            hasMoreMessages = hasMore
             loader.sendMessage({
                 op: 'replace',
+                model: messageListModel,
+                messages: messages
+            })
+        }
+    }
+
+    function handleHistorySuccess(channelId, messages, hasMore) {
+        if (channelId === channel.id) {
+            hasMoreMessages = hasMore
+            loader.sendMessage({
+                op: 'prepend',
                 model: messageListModel,
                 messages: messages
             })

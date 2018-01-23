@@ -18,6 +18,7 @@ public:
     static QVariantList channelMessages(QVariant channelId);
     static bool channelMessagesExist(QVariant channelId);
     static void setChannelMessages(QVariant channelId, QVariantList messages);
+    static void prependChannelMessages(QVariant channelId, QVariantList messages);
     static void appendChannelMessage(QVariant channelId, QVariantMap message);
     static void clearChannelMessages();
 
