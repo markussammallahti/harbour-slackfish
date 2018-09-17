@@ -25,6 +25,7 @@ signals:
 public slots:
     void disconnectFromHost();
     void listen(QUrl url);
+    void send(QJsonObject message);
     void checkConnection();
     void handleListerStart();
     void handleListerEnd();

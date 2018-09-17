@@ -41,6 +41,14 @@ void SlackStream::listen(QUrl url) {
     webSocket->connectToHost(socketUrl);
 }
 
+void SlackStream::send(QJsonObject message) {
+    QJsonDocument document(message);
+    QByteArray data = document.toJson(QJsonDocument::Compact);
+    qDebug() << "Send" << data;
+
+    webSocket->write(QString(data));
+}
+
 void SlackStream::checkConnection() {
     if (isConnected) {
         QJsonObject values;
@@ -48,10 +56,7 @@ void SlackStream::checkConnection() {
         values.insert("type", QJsonValue(QString("ping")));
 
         qDebug() << "Check connection" << lastMessageId;
-
-        QJsonDocument document(values);
-        QByteArray data = document.toJson(QJsonDocument::Compact);
-        webSocket->write(QString(data));
+        send(values);
     }
     else {
         qDebug() << "Socket not connected, skiping connection check";
@@ -60,9 +65,9 @@ void SlackStream::checkConnection() {
 
 void SlackStream::handleListerStart() {
     qDebug() << "Socket connected";
-    emit connected();
     isConnected = true;
     checkTimer->start(15000);
+    emit connected();
 }
 
 void SlackStream::handleListerEnd() {

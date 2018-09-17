@@ -82,6 +82,19 @@ void SlackClient::reconnect() {
 void SlackClient::handleStreamStart() {
     qDebug() << "Stream started";
     emit connected();
+
+    QJsonArray userIds;
+    foreach (const QVariant &value, Storage::users()) {
+        QVariantMap user = value.toMap();
+        if (user.value("name") != QVariant("slackbot")) {
+            userIds.append(QJsonValue::fromVariant(user.value("id")));
+        }
+    }
+
+    QJsonObject message;
+    message.insert("type", QJsonValue(QString("presence_sub")));
+    message.insert("ids", userIds);
+    this->stream->send(message);
 }
 
 void SlackClient::handleStreamEnd() {
@@ -119,7 +132,7 @@ void SlackClient::handleStreamMessage(QJsonObject message) {
     else if (type == "channel_left" || type == "group_left") {
         parseChannelLeft(message);
     }
-    else if (type == "presence_change" || type == "manual_presence_change") {
+    else if (type == "presence_change") {
         parsePresenceChange(message);
     }
     else if (type == "desktop_notification") {
@@ -202,23 +215,31 @@ void SlackClient::parseMessageUpdate(QJsonObject message) {
 }
 
 void SlackClient::parsePresenceChange(QJsonObject message) {
-    QVariant userId = message.value("user").toVariant();
     QVariant presence = message.value("presence").toVariant();
-
-    QVariantMap user = Storage::user(userId);
-    if (!user.isEmpty()) {
-        user.insert("presence", presence);
-        Storage::saveUser(user);
-        emit userUpdated(user);
+    QVariantList userIds;
+    if (message.contains("user")) {
+        userIds << message.value("user").toVariant();
+    }
+    else {
+        userIds = message.value("users").toArray().toVariantList();
     }
 
-    foreach (QVariant item, Storage::channels()) {
-        QVariantMap channel = item.toMap();
+    foreach (QVariant userId, userIds) {
+        QVariantMap user = Storage::user(userId);
+        if (!user.isEmpty()) {
+            user.insert("presence", presence);
+            Storage::saveUser(user);
+            emit userUpdated(user);
+        }
 
-        if (channel.value("type") == QVariant("im") && channel.value("userId") == userId) {
-            channel.insert("presence", presence);
-            Storage::saveChannel(channel);
-            emit channelUpdated(channel);
+        foreach (QVariant item, Storage::channels()) {
+            QVariantMap channel = item.toMap();
+
+            if (channel.value("type") == QVariant("im") && channel.value("userId") == userId) {
+                channel.insert("presence", presence);
+                Storage::saveChannel(channel);
+                emit channelUpdated(channel);
+            }
         }
     }
 }
@@ -478,7 +499,10 @@ void SlackClient::loadUsers() {
 
 void SlackClient::start() {
     qDebug() << "Connect start";
-    QNetworkReply *reply = executeGet("rtm.connect");
+
+    QMap<QString,QString> params;
+    params.insert("batch_presence_aware", "1");
+    QNetworkReply *reply = executeGet("rtm.connect", params);
 
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         QJsonObject data = getResult(reply);
