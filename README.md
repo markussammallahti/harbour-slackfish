@@ -10,15 +10,14 @@ Unoffical [Slack](https://slack.com/) client for [Sailfish](https://sailfishos.o
 qpm install
 ```
 
-* Create [new Slack application](https://api.slack.com/apps?new_app=1) 
-and insert its id and secret to file `/vendor/vendor.pri`:
-```pri
+* Create [new Slack application](https://api.slack.com/apps?new_app=1)
+and insert its id and secret to file `.qmake.conf`:
+```
 slack_client_id=xxxxxxxxxxx.xxxxxxxxxxxx
 slack_client_secret=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-``` 
+```
 
 * Connect to Mer SDK via ssh and, go to Slackfish project directory and build it:
 ```bash
 mb2 -t SailfishOS-2.1.4.13-armv7hl build
 ```
-
