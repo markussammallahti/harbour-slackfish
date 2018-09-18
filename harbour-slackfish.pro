@@ -29,7 +29,7 @@ QT += concurrent
 
 include(vendor/vendor.pri)
 
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 DEFINES += APP_VERSION=\\\"$${VERSION}\\\"
 
 # Check slack config
