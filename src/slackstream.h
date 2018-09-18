@@ -6,6 +6,7 @@
 #include <QPointer>
 #include <QUrl>
 #include <QTimer>
+#include <QAtomicInteger>
 
 #include "QtWebsocket/QWsSocket.h"
 
@@ -37,7 +38,7 @@ private:
     QPointer<QTimer> checkTimer;
 
     bool isConnected;
-    int lastMessageId;
+    QAtomicInteger<int> lastMessageId;
 };
 
 #endif // SLACKSTREAM_H

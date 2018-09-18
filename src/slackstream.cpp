@@ -3,7 +3,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-SlackStream::SlackStream(QObject *parent) : QObject(parent), isConnected(false), lastMessageId(0) {
+SlackStream::SlackStream(QObject *parent) : QObject(parent), isConnected(false), lastMessageId(1) {
     webSocket = new QtWebsocket::QWsSocket(this);
     checkTimer = new QTimer(this);
 
@@ -42,6 +42,7 @@ void SlackStream::listen(QUrl url) {
 }
 
 void SlackStream::send(QJsonObject message) {
+    message.insert("id", QJsonValue(lastMessageId.fetchAndAddRelaxed(1)));
     QJsonDocument document(message);
     QByteArray data = document.toJson(QJsonDocument::Compact);
     qDebug() << "Send" << data;
@@ -52,7 +53,6 @@ void SlackStream::send(QJsonObject message) {
 void SlackStream::checkConnection() {
     if (isConnected) {
         QJsonObject values;
-        values.insert("id", QJsonValue(++lastMessageId));
         values.insert("type", QJsonValue(QString("ping")));
 
         qDebug() << "Check connection" << lastMessageId;
