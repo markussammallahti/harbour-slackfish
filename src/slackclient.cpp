@@ -476,9 +476,7 @@ void SlackClient::init() {
 
 void SlackClient::loadUsers() {
   qDebug() << "Start load users";
-  QMap<QString,QString> params;
-  params.insert("presence", "true");
-  QNetworkReply* reply = executeGet("users.list", params);
+  QNetworkReply* reply = executeGet("users.list");
 
   connect(reply, &QNetworkReply::finished, [reply,this]() {
     QJsonObject data = getResult(reply);
@@ -608,13 +606,13 @@ void SlackClient::parseUsers(QJsonObject data) {
             presence = QVariant("active");
         }
         else {
-            presence = user.value("presence").toVariant();
+            presence = QVariant("away");
         }
 
         QVariantMap data;
         data.insert("id", user.value("id").toVariant());
         data.insert("name", user.value("name").toVariant());
-        data.insert("presence",presence);
+        data.insert("presence", presence);
         Storage::saveUser(data);
     }
 }
