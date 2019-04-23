@@ -600,9 +600,9 @@ QVariantMap SlackClient::parseChat(QJsonObject chat) {
 void SlackClient::parseUsers(QJsonObject data) {
     foreach (const QJsonValue &value, data.value("members").toArray()) {
         QJsonObject user = value.toObject();
-
+        QJsonObject profile = user.value("profile").toObject();
         QVariant presence;
-        if (user.value("profile").toObject().value("always_active").toBool()) {
+        if (profile.value("always_active").toBool()) {
             presence = QVariant("active");
         }
         else {
@@ -611,7 +611,11 @@ void SlackClient::parseUsers(QJsonObject data) {
 
         QVariantMap data;
         data.insert("id", user.value("id").toVariant());
-        data.insert("name", user.value("name").toVariant());
+        if (profile.contains("display_name")) {
+            data.insert("name", profile.value("display_name").toVariant());
+        } else {
+            data.insert("name", user.value("name").toVariant());
+        }
         data.insert("presence", presence);
         Storage::saveUser(data);
     }
